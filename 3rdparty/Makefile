@@ -1,4 +1,9 @@
 # SPIRV-Tools 
+
+# Force MAKE to a simple path (avoid spaces) so nested builds don't break
+MAKE := /usr/bin/make
+export MAKE
+
 SPIRV_TOOLS_DIR?=SPIRV-Tools
 SPIRV_TOOLS_EXTERNAL_DIR:=$(SPIRV_TOOLS_DIR)/external
 SPIRV_TOOLS_BUILD_DIR:=$(SPIRV_TOOLS_DIR)/build
@@ -33,7 +38,7 @@ clean: clean-spirv clean-glslang
 # glslang
 
 clean-glslang:
-	if [[ -e $(GLSLANG_BUILD_DIR) ]]; then $(MAKE) -C $(GLSLANG_BUILD_DIR) clean; fi
+	if [[ -e "$(GLSLANG_BUILD_DIR)" ]]; then "$(MAKE)" -C "$(GLSLANG_BUILD_DIR)" clean; fi
 	rm -rf $(GLSLANG_BUILD_DIR)
 .PHONY: clean-glslang
 
@@ -41,30 +46,30 @@ build_info.h: $(GLSLANG_BUILD_DIR)/include/glslang/build_info.h
 .PHONY: build_info.h
 
 $(GLSLANG_BUILD_DIR)/include/glslang/build_info.h: $(GLSLANG_DIR)/CHANGES.md $(GLSLANG_DIR)/build_info.h.tmpl $(GLSLANG_BUILD_DIR)/CMakeCache.txt
-	$(MAKE) -C $(GLSLANG_BUILD_DIR) glslang-build-info/fast
+	$(MAKE) -C "$(GLSLANG_BUILD_DIR)" glslang-build-info/fast
 
 $(GLSLANG_BUILD_DIR)/CMakeCache.txt: $(GLSLANG_DIR)/CMakeLists.txt
-	mkdir -p $(GLSLANG_BUILD_DIR)
-	$(CMAKE) -B $(GLSLANG_BUILD_DIR) -S $(GLSLANG_DIR)
+	mkdir -p "$(GLSLANG_BUILD_DIR)"
+	MAKE=/usr/bin/make $(CMAKE) -B "$(GLSLANG_BUILD_DIR)" -S "$(GLSLANG_DIR)" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 # SPIRV-Tools
 
 clean-spirv:
-	if [[ -e $(SPIRV_TOOLS_BUILD_DIR) ]]; then $(MAKE) -C $(SPIRV_TOOLS_BUILD_DIR) clean; fi
-	rm -rf $(SPIRV_TOOLS_BUILD_DIR)
-	rm -rf $(SPIRV_TOOLS_EXTERNAL_DIR)/SPIRV-Headers
+	if [[ -e "$(SPIRV_TOOLS_BUILD_DIR)" ]]; then "$(MAKE)" -C "$(SPIRV_TOOLS_BUILD_DIR)" clean; fi
+	rm -rf "$(SPIRV_TOOLS_BUILD_DIR)"
+	rm -rf "$(SPIRV_TOOLS_EXTERNAL_DIR)/SPIRV-Headers"
 .PHONY : clean-spirv
 
 libSPIRV-Tools-opt.a: $(SPIRV_TOOLS_BUILD_DIR)/source/opt/libSPIRV-Tools-opt.a
 .PHONY : libSPIRV-Tools-opt.a
 
 $(SPIRV_TOOLS_BUILD_DIR)/source/opt/libSPIRV-Tools-opt.a: $(SPIRV_TOOLS_BUILD_DIR)/CMakeCache.txt
-	mkdir -p $(SPIRV_TOOLS_BUILD_DIR)
-	$(MAKE) -j$(NCPUS) -C $(SPIRV_TOOLS_BUILD_DIR) SPIRV-Tools-opt
+	mkdir -p "$(SPIRV_TOOLS_BUILD_DIR)"
+	"$(MAKE)" -j$(NCPUS) -C "$(SPIRV_TOOLS_BUILD_DIR)" SPIRV-Tools-opt
 
 $(SPIRV_TOOLS_BUILD_DIR)/CMakeCache.txt: $(SPIRV_TOOLS_DIR)/CMakeLists.txt $(SPIRV_TOOLS_EXTERNAL_DIR)/SPIRV-Headers
-	mkdir -p $(SPIRV_TOOLS_BUILD_DIR)
-	$(CMAKE) -B $(SPIRV_TOOLS_BUILD_DIR) -S $(SPIRV_TOOLS_DIR) -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES='$(TARGET_ARCHITECTURES)' -DSPIRV_WERROR=OFF
+	mkdir -p "$(SPIRV_TOOLS_BUILD_DIR)"
+	MAKE=/usr/bin/make $(CMAKE) -B "$(SPIRV_TOOLS_BUILD_DIR)" -S "$(SPIRV_TOOLS_DIR)" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES='$(TARGET_ARCHITECTURES)' -DSPIRV_WERROR=OFF
 
 $(SPIRV_TOOLS_EXTERNAL_DIR)/SPIRV-Headers:
 	pushd $(SPIRV_TOOLS_DIR); \
